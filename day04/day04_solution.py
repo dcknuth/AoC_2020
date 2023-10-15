@@ -56,56 +56,76 @@ def checkValid2(p):
     try:
         y = int(p['byr'])
     except:
+        print("Passport", p, "failed trying to convert byr to int")
         return(False)
     if y < 1920 or y > 2002:
+        print("Passport", p, "failed byr range check")
         return(False)
     # check issue year
     try:
         y = int(p['iyr'])
     except:
+        print("Passport", p, "failed trying to convert iyr to int")
         return(False)
     if y < 2010 or y > 2020:
+        print("Passport", p, "failed iyr range check")
         return(False)
     # check expiration year
     try:
         y = int(p['eyr'])
     except:
+        print("Passport", p, "failed trying to convert eyr to int")
         return(False)
     if y < 2020 or y > 2030:
+        print("Passport", p, "failed eyr range check")
         return(False)
     # check height
     if p['hgt'][-2:] != 'cm' and p['hgt'][-2:] != 'in':
+        print("Passport", p, "failed hgt format check")
         return(False)
     try:
         h = int(p['hgt'][:-2])
     except:
+        print("Passport", p, "failed trying to convert hgt to int")
         return(False)
     if p['hgt'][-2:] == 'cm' and (h < 150 or h > 193):
+        print("Passport", p, "failed hgt range check")
         return(False)
     if p['hgt'][-2:] == 'in' and (h < 59 or h > 76):
+        print("Passport", p, "failed hgt range check")
         return(False)
     # check hair color
-    if p['hcl'][0] != '#':
+    if p['hcl'][0] != '#' or len(p['hcl'][1:]) != 6:
+        print("Passport", p, "failed hcl format check")
         return(False)
-    try:
-        c = int(p['hcl'][1:7])
-    except:
-        return(False)
-    if c < 0 or c > 999999:
-        return(False)
+    else:
+        hexlist = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', \
+                   'b', 'c', 'd', 'e', 'f']
+        for c in p['hcl'][1:7]:
+            if c not in hexlist:
+                print("Passport", p, "failed hcl format check")
+                return(False)
     # check eye color
     eye_color = ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth']
     if p['ecl'] not in eye_color:
+        print("Passport", p, "failed ecl check")
         return(False)
     # check passport id
+    if len(p['pid']) != 9:
+        print("Passport", p, "failed pid format check")
+        return(False)
     try:
         id = int(p['pid'][0:9])
     except:
+        print("Passport", p, "failed trying to convert pid to int")
         return(False)
     return(True)
 
+T0 = time.time()
 valid_passports = dict()
 for key in passports.keys():
     if checkValid2(passports[key]):
         valid_passports[key] = passports[key]
+T1 = time.time()
 print("New number of valid passports is", len(valid_passports))
+print("Validity checks took", T1-T0, "seconds")
