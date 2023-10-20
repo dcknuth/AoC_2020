@@ -17,6 +17,7 @@ def canContain(bag, rules):
     # First get a list of possibles, removing the "no other" and those
     #  that directly contain the bag we are looking for
     possible_bags = []
+    visited = []
     for color in rules.keys():
         if len(rules[color]) == 0 or color == bag:
             no_list.append(color)
@@ -31,27 +32,15 @@ def canContain(bag, rules):
     # Now work through the list of possible bags until it's empty
     while len(possible_bags) > 0:
         cur_bag = possible_bags.pop()
+        visited.append(cur_bag)
         cur_list = [x for x, y in rules[cur_bag]]
-        found = False
-        while not found:
-            new_list = []
-            for sub_bag in cur_list:
-                if sub_bag in no_list:
-                    continue
-                if sub_bag in yes_list:
-                    yes_list.append(cur_bag)
-                    found = True
-                    break
-                sub_list = [x for x, y in rules[sub_bag]]
-                if bag in sub_list:
-                    found = True
-                    yes_list.append(sub_bag)
-                    break
-                new_list.append(sub_bag)
-            if len(new_list) == 0 and not found:
-                no_list.append(cur_bag)
-                break
-            cur_list = new_list
+        for sub_bag in cur_list:
+            if sub_bag in no_list or sub_bag in visited:
+                continue
+            if sub_bag in yes_list:
+                yes_list.append(cur_bag)
+            else:
+                possible_bags.append(sub_bag)
     # should be done, return yes_list
     return(yes_list)
 
