@@ -29,25 +29,33 @@ def canContain(bag, rules):
             elif color not in no_list and color not in yes_list \
                 and color not in possible_bags:
                 possible_bags.append(color)
-    # Now work through the list of possible bags until it's empty
-    while len(possible_bags) > 0:
-        cur_bag = possible_bags.pop()
-        visited.append(cur_bag)
-        cur_list = [x for x, y in rules[cur_bag]]
+    def contains(target, cbag, rules, no_list, yes_list):
+        '''Given a bag, a target bag and rules, return True if the
+        target is in the bag (or sub-bag) or False if not'''
+        if cbag in no_list:
+            return(False)
+        cur_list = [x for x, y in rules[cbag]]
+        if target in cur_list:
+            return(True)
         for sub_bag in cur_list:
-            if sub_bag in no_list or sub_bag in visited:
-                continue
-            if sub_bag in yes_list:
-                yes_list.append(cur_bag)
-            else:
-                possible_bags.append(sub_bag)
-    # should be done, return yes_list
+            if contains(target, sub_bag, rules, no_list, yes_list):
+                return(True)
+        return(False)
+
+    # Now work through the list of possible bags until it's empty
+    for cur_bag in possible_bags:
+        if contains(bag, cur_bag, rules, no_list, yes_list):
+            yes_list.append(cur_bag)
+        else:
+            no_list.append(cur_bag)
+    # Remove any duplicates
+    yes_list = list(set(yes_list))
     return(yes_list)
 
 # I guess perf_counter() is a better fit than the time() function we
-#  have used a couple times. It should give a more accurate measure of
-#  how long we have been running, but is not seconds-since-epoch and so
-#  can't be used to get the current time.
+#  have used a few times so far. It should give a more accurate measure
+#  of how long we have been running, but is not seconds-since-epoch and
+#  so can't be used to get the current time.
 # timeit() might still be better, but let's try this
 T0 = time.perf_counter()
 # make the rules dict
@@ -67,4 +75,27 @@ for l in ls:
 contains_gold = canContain("shiny gold", rules)
 T1 = time.perf_counter()
 print("Number of colors that can contain a gold bag is", len(contains_gold))
-print("Took", T1-T0, "seconds")
+print(f"Time taken was {T1-T0:0.5f} seconds")
+# 0.01721
+
+'''Part 2: How many individual bags are required inside your single
+shiny gold bag?'''
+# We still have our rules dict, so maybe just a recursive function
+def bagsIn(bag, rules):
+    '''Take a bag color and the dict of rules and return the total number
+    of bags it contains'''
+    sub_bags = rules[bag]
+    if len(sub_bags) == 0:
+        return(0)
+    num_bags = sum([x[1] for x in sub_bags])
+    for sub_bag in sub_bags:
+        col, num = sub_bag
+        num_bags += num * bagsIn(col, rules)
+    return(num_bags)
+
+T0 = time.perf_counter()
+total_bags = bagsIn("shiny gold", rules)
+T1 = time.perf_counter()
+print("The number of bags in a shiny gold bag is", total_bags)
+print(f"Time taken was {T1-T0:0.5f} seconds")
+# 0.00003
